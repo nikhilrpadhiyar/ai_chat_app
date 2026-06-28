@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "appTitle": "AI Chat App",
+  "newChat": "New Chat",
+  "conversations": "Conversations",
+  "settings": "Settings",
+  "messagePlaceholder": "Message Claude...",
+  "promptTemplates": "Prompt Templates"
+}
