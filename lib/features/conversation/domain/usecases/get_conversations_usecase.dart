@@ -1,11 +1,11 @@
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/conversation/domain/entities/conversation_entity.dart';
+import 'package:ai_chat_app/features/conversation/domain/repositories/conversation_repository.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../entities/conversation_entity.dart';
-import '../repositories/conversation_repository.dart';
 
 class GetConversationsUseCase {
-  final ConversationRepository _repository;
   const GetConversationsUseCase(this._repository);
+  final ConversationRepository _repository;
 
   Future<Either<Failure, List<ConversationEntity>>> call() =>
       _repository.getConversations();

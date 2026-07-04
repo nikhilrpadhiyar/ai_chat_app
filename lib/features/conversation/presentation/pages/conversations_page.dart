@@ -1,22 +1,24 @@
+import 'package:ai_chat_app/core/theme/app_colors.dart';
+import 'package:ai_chat_app/core/theme/app_text_styles.dart';
+import 'package:ai_chat_app/core/utils/extensions.dart';
+import 'package:ai_chat_app/features/conversation/domain/entities/conversation_entity.dart';
+import 'package:ai_chat_app/features/conversation/presentation/controllers/conversation_controller.dart';
+import 'package:ai_chat_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/extensions.dart';
-import '../../../../routes/app_routes.dart';
-import '../controllers/conversation_controller.dart';
 
 class ConversationsPage extends StatelessWidget {
   const ConversationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ConversationController>();
+    final ConversationController controller =
+        Get.find<ConversationController>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
-        actions: [
+        actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Get.toNamed(AppRoutes.settings),
@@ -32,7 +34,7 @@ class ConversationsPage extends StatelessWidget {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              children: <Widget>[
                 Container(
                   width: 80,
                   height: 80,
@@ -40,12 +42,17 @@ class ConversationsPage extends StatelessWidget {
                     gradient: AppColors.primaryGradient,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.chat_bubble_outline,
-                      size: 40, color: Colors.white),
+                  child: const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 40,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Text('No conversations yet',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'No conversations yet',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Start a new chat to begin',
@@ -62,8 +69,8 @@ class ConversationsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: controller.conversations.length,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (_, i) {
-              final conv = controller.conversations[i];
+            itemBuilder: (_, int i) {
+              final ConversationEntity conv = controller.conversations[i];
               return Dismissible(
                 key: Key(conv.id),
                 direction: DismissDirection.endToStart,
@@ -81,8 +88,9 @@ class ConversationsPage extends StatelessWidget {
                         AlertDialog(
                           title: const Text('Delete conversation?'),
                           content: const Text(
-                              'This will permanently delete this conversation and all its messages.'),
-                          actions: [
+                            'This will permanently delete this conversation and all its messages.',
+                          ),
+                          actions: <Widget>[
                             TextButton(
                               onPressed: () => Get.back(result: false),
                               child: const Text('Cancel'),
@@ -90,7 +98,8 @@ class ConversationsPage extends StatelessWidget {
                             TextButton(
                               onPressed: () => Get.back(result: true),
                               style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.error),
+                                foregroundColor: AppColors.error,
+                              ),
                               child: const Text('Delete'),
                             ),
                           ],
@@ -102,7 +111,9 @@ class ConversationsPage extends StatelessWidget {
                 child: Card(
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     leading: Container(
                       width: 48,
                       height: 48,
@@ -110,8 +121,11 @@ class ConversationsPage extends StatelessWidget {
                         gradient: AppColors.primaryGradient,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.chat_rounded,
-                          color: Colors.white, size: 22),
+                      child: const Icon(
+                        Icons.chat_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                     title: Text(
                       conv.title,
@@ -141,7 +155,8 @@ class ConversationsPage extends StatelessWidget {
       }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final conv = await controller.createNewConversation();
+          final ConversationEntity? conv = await controller
+              .createNewConversation();
           if (conv != null) {
             Get.toNamed(AppRoutes.chat, arguments: conv);
           }

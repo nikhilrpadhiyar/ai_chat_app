@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 class LoggingInterceptor extends Interceptor {
-  final _log = Logger(printer: PrettyPrinter(methodCount: 0));
+  final Logger _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -11,7 +11,10 @@ class LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
     _log.i('[RES] ${response.statusCode} ${response.requestOptions.uri}');
     handler.next(response);
   }

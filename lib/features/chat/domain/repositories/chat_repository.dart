@@ -1,6 +1,6 @@
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../entities/message_entity.dart';
 
 abstract class ChatRepository {
   /// Streams tokens as they arrive from the AI API.
@@ -16,7 +16,9 @@ abstract class ChatRepository {
   Future<Either<Failure, void>> saveMessage(MessageEntity message);
 
   /// Returns all messages for a conversation (ordered oldest first).
-  Future<Either<Failure, List<MessageEntity>>> getMessages(String conversationId);
+  Future<Either<Failure, List<MessageEntity>>> getMessages(
+    String conversationId,
+  );
 
   /// Deletes a single message.
   Future<Either<Failure, void>> deleteMessage(String messageId);

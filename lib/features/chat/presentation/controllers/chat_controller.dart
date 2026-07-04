@@ -1,38 +1,44 @@
 import 'dart:async';
+
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/core/storage/storage_service.dart';
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
+import 'package:ai_chat_app/features/chat/domain/usecases/get_messages_usecase.dart';
+import 'package:ai_chat_app/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:ai_chat_app/features/conversation/presentation/controllers/conversation_controller.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/storage/storage_service.dart';
-import '../../domain/entities/message_entity.dart';
-import '../../domain/usecases/get_messages_usecase.dart';
-import '../../domain/usecases/send_message_usecase.dart';
-import '../../../conversation/presentation/controllers/conversation_controller.dart';
 
 class ChatController extends GetxController {
+  ChatController(this._sendMessage, this._getMessages, this._storage);
   final SendMessageUseCase _sendMessage;
   final GetMessagesUseCase _getMessages;
   final StorageService _storage;
 
-  ChatController(this._sendMessage, this._getMessages, this._storage);
+  final RxList<MessageEntity> messages = <MessageEntity>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxBool isStreaming = false.obs;
+  final RxBool isListening = false.obs;
+  final RxString streamingContent = ''.obs;
+  final RxnString errorMessage = RxnString();
 
-  final messages = <MessageEntity>[].obs;
-  final isLoading = false.obs;
-  final isStreaming = false.obs;
-  final isListening = false.obs;
-  final streamingContent = ''.obs;
-  final errorMessage = RxnString();
-
-  final textController = TextEditingController();
-  final scrollController = ScrollController();
-  final _uuid = const Uuid();
-  final _stt = SpeechToText();
+  final TextEditingController textController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+  final Uuid _uuid = const Uuid();
+  final SpeechToText _stt = SpeechToText();
 
   String? _conversationId;
   String get _model =>
-      _storage.read<String>(AppConstants.selectedModelKey) ?? AppConstants.defaultModel;
-  String? get _systemPrompt => _storage.read<String>(AppConstants.systemPromptKey);
+      _storage.read<String>(AppConstants.selectedModelKey) ??
+      AppConstants.defaultModel;
+  String? get _systemPrompt =>
+      _storage.read<String>(AppConstants.systemPromptKey);
 
   StreamSubscription<dynamic>? _streamSub;
 
@@ -44,24 +50,26 @@ class ChatController extends GetxController {
   Future<void> _loadMessages() async {
     if (_conversationId == null) return;
     isLoading.value = true;
-    final result = await _getMessages(_conversationId!);
+    final Either<Failure, List<MessageEntity>> result = await _getMessages(
+      _conversationId!,
+    );
     result.fold(
-      (f) => errorMessage.value = f.message,
-      (list) => messages.assignAll(list),
+      (Failure f) => errorMessage.value = f.message,
+      (List<MessageEntity> list) => messages.assignAll(list),
     );
     isLoading.value = false;
     _scrollToBottom();
   }
 
   Future<void> sendMessage([String? overrideText]) async {
-    final text = (overrideText ?? textController.text).trim();
+    final String text = (overrideText ?? textController.text).trim();
     if (text.isEmpty || isStreaming.value) return;
     if (_conversationId == null) return;
 
     textController.clear();
     errorMessage.value = null;
 
-    final userMsg = MessageEntity(
+    final MessageEntity userMsg = MessageEntity(
       id: _uuid.v4(),
       conversationId: _conversationId!,
       role: MessageRole.user,
@@ -73,8 +81,8 @@ class ChatController extends GetxController {
     _scrollToBottom();
 
     // Placeholder assistant message for streaming
-    final assistantId = _uuid.v4();
-    final assistantMsg = MessageEntity(
+    final String assistantId = _uuid.v4();
+    final MessageEntity assistantMsg = MessageEntity(
       id: assistantId,
       conversationId: _conversationId!,
       role: MessageRole.assistant,
@@ -86,42 +94,49 @@ class ChatController extends GetxController {
     isStreaming.value = true;
     streamingContent.value = '';
 
-    final buffer = StringBuffer();
+    final StringBuffer buffer = StringBuffer();
 
-    _streamSub = _sendMessage(
-      conversationId: _conversationId!,
-      history: messages.where((m) => m.id != assistantId).toList(),
-      userMessage: text,
-      model: _model,
-      systemPrompt: _systemPrompt,
-    ).listen(
-      (result) {
-        result.fold(
-          (failure) {
-            _finalizeStreaming(assistantId, buffer.toString(), isError: true);
-            errorMessage.value = failure.message;
+    _streamSub =
+        _sendMessage(
+          conversationId: _conversationId!,
+          history: messages
+              .where((MessageEntity m) => m.id != assistantId)
+              .toList(),
+          userMessage: text,
+          model: _model,
+          systemPrompt: _systemPrompt,
+        ).listen(
+          (Either<Failure, String> result) {
+            result.fold(
+              (Failure failure) {
+                _finalizeStreaming(
+                  assistantId,
+                  buffer.toString(),
+                  isError: true,
+                );
+                errorMessage.value = failure.message;
+              },
+              (String token) {
+                buffer.write(token);
+                streamingContent.value = buffer.toString();
+                _updateStreamingMessage(assistantId, buffer.toString());
+                _scrollToBottom();
+              },
+            );
           },
-          (token) {
-            buffer.write(token);
-            streamingContent.value = buffer.toString();
-            _updateStreamingMessage(assistantId, buffer.toString());
-            _scrollToBottom();
+          onDone: () {
+            _finalizeStreaming(assistantId, buffer.toString());
+            _updateConversationMeta(text, buffer.toString());
+          },
+          onError: (Object e) {
+            _finalizeStreaming(assistantId, buffer.toString(), isError: true);
+            errorMessage.value = e.toString();
           },
         );
-      },
-      onDone: () {
-        _finalizeStreaming(assistantId, buffer.toString());
-        _updateConversationMeta(text, buffer.toString());
-      },
-      onError: (Object e) {
-        _finalizeStreaming(assistantId, buffer.toString(), isError: true);
-        errorMessage.value = e.toString();
-      },
-    );
   }
 
   void _updateStreamingMessage(String id, String content) {
-    final idx = messages.indexWhere((m) => m.id == id);
+    final int idx = messages.indexWhere((MessageEntity m) => m.id == id);
     if (idx == -1) return;
     messages[idx] = messages[idx].copyWith(content: content);
     messages.refresh();
@@ -131,7 +146,7 @@ class ChatController extends GetxController {
     isStreaming.value = false;
     streamingContent.value = '';
     _streamSub?.cancel();
-    final idx = messages.indexWhere((m) => m.id == id);
+    final int idx = messages.indexWhere((MessageEntity m) => m.id == id);
     if (idx == -1) return;
     messages[idx] = messages[idx].copyWith(
       content: content.isEmpty ? '(No response)' : content,
@@ -143,7 +158,7 @@ class ChatController extends GetxController {
   void _updateConversationMeta(String userText, String aiResponse) {
     if (_conversationId == null) return;
     try {
-      final conv = Get.find<ConversationController>();
+      final ConversationController conv = Get.find<ConversationController>();
       conv.updateAfterMessage(
         conversationId: _conversationId!,
         lastMessage: aiResponse.isNotEmpty ? aiResponse : userText,
@@ -159,16 +174,19 @@ class ChatController extends GetxController {
   }
 
   Future<void> startVoiceInput() async {
-    final available = await _stt.initialize(
-      onError: (e) => isListening.value = false,
+    final bool available = await _stt.initialize(
+      onError: (SpeechRecognitionError e) => isListening.value = false,
     );
     if (!available) {
-      Get.snackbar('Voice Unavailable', 'Speech recognition is not available on this device');
+      Get.snackbar(
+        'Voice Unavailable',
+        'Speech recognition is not available on this device',
+      );
       return;
     }
     isListening.value = true;
     await _stt.listen(
-      onResult: (result) {
+      onResult: (SpeechRecognitionResult result) {
         if (result.finalResult) {
           textController.text = result.recognizedWords;
           isListening.value = false;

@@ -22,20 +22,21 @@ extension ContextX on BuildContext {
 }
 
 extension StringX on String {
-  String get capitalize => isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
-  String get titleCase =>
-      split(' ').map((w) => w.capitalize).join(' ');
-  bool get isValidEmail =>
-      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(this);
+  String get capitalize =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
+  String get titleCase => split(' ').map((String w) => w.capitalize).join(' ');
+  bool get isValidEmail => RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  ).hasMatch(this);
   String truncate(int maxLength) =>
       length <= maxLength ? this : '${substring(0, maxLength)}...';
 }
 
 extension DateTimeX on DateTime {
   String get timeLabel {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final date = DateTime(year, month, day);
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime date = DateTime(year, month, day);
     if (date == today) return DateFormat.jm().format(this);
     if (date == today.subtract(const Duration(days: 1))) return 'Yesterday';
     if (now.difference(this).inDays < 7) return DateFormat.EEEE().format(this);
@@ -43,9 +44,9 @@ extension DateTimeX on DateTime {
   }
 
   String get chatDateHeader {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final date = DateTime(year, month, day);
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime date = DateTime(year, month, day);
     if (date == today) return 'Today';
     if (date == today.subtract(const Duration(days: 1))) return 'Yesterday';
     return DateFormat.yMMMEd().format(this);

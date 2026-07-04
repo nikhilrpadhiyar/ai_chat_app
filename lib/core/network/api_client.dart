@@ -1,14 +1,14 @@
+import 'package:ai_chat_app/core/network/interceptors/auth_interceptor.dart';
+import 'package:ai_chat_app/core/network/interceptors/error_interceptor.dart';
+import 'package:ai_chat_app/core/network/interceptors/logging_interceptor.dart';
+import 'package:ai_chat_app/core/storage/secure_storage_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../storage/secure_storage_service.dart';
-import 'interceptors/auth_interceptor.dart';
-import 'interceptors/error_interceptor.dart';
-import 'interceptors/logging_interceptor.dart';
 
 class ApiClient {
-  static final ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
   ApiClient._internal();
+  static final ApiClient _instance = ApiClient._internal();
 
   late final Dio _dio;
 
@@ -21,14 +21,14 @@ class ApiClient {
         baseUrl: _baseUrl,
         connectTimeout: _timeout,
         receiveTimeout: _timeout,
-        headers: {
+        headers: <String, dynamic>{
           'Content-Type': 'application/json',
           'anthropic-version': '2023-06-01',
         },
       ),
     );
 
-    _dio.interceptors.addAll([
+    _dio.interceptors.addAll(<Interceptor>[
       AuthInterceptor(secureStorage),
       ErrorInterceptor(),
       if (kDebugMode) LoggingInterceptor(),
@@ -42,13 +42,16 @@ class ApiClient {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) =>
-      _dio.post<T>(path, data: data, queryParameters: queryParameters, options: options);
+  }) => _dio.post<T>(
+    path,
+    data: data,
+    queryParameters: queryParameters,
+    options: options,
+  );
 
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
-  }) =>
-      _dio.get<T>(path, queryParameters: queryParameters, options: options);
+  }) => _dio.get<T>(path, queryParameters: queryParameters, options: options);
 }

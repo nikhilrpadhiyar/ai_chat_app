@@ -1,31 +1,32 @@
 import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
-  final String message;
   const Failure(this.message);
+  final String message;
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => <Object?>[message];
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure([String message = 'No internet connection']) : super(message);
+  const NetworkFailure([String message = 'No internet connection'])
+    : super(message);
 }
 
 class ApiFailure extends Failure {
-  final int? statusCode;
   const ApiFailure(String message, {this.statusCode}) : super(message);
+  final int? statusCode;
   @override
-  List<Object?> get props => [message, statusCode];
+  List<Object?> get props => <Object?>[message, statusCode];
 }
 
 class UnauthorizedFailure extends Failure {
   const UnauthorizedFailure([String message = 'Invalid or missing API key'])
-      : super(message);
+    : super(message);
 }
 
 class RateLimitFailure extends Failure {
   const RateLimitFailure([String message = 'Rate limit exceeded. Please wait.'])
-      : super(message);
+    : super(message);
 }
 
 class CacheFailure extends Failure {
@@ -37,5 +38,6 @@ class ValidationFailure extends Failure {
 }
 
 class StreamFailure extends Failure {
-  const StreamFailure([String message = 'Streaming response error']) : super(message);
+  const StreamFailure([String message = 'Streaming response error'])
+    : super(message);
 }

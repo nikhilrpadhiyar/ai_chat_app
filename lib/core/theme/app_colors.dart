@@ -42,12 +42,12 @@ abstract class AppColors {
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primary, primaryLight],
+    colors: <Color>[primary, primaryLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const LinearGradient darkGradient = LinearGradient(
-    colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+    colors: <Color>[Color(0xFF1A1A2E), Color(0xFF16213E)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

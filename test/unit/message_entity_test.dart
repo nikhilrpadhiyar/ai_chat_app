@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final baseMessage = MessageEntity(
+  final MessageEntity baseMessage = MessageEntity(
     id: 'msg-1',
     conversationId: 'conv-1',
     role: MessageRole.user,
@@ -18,9 +18,9 @@ void main() {
     });
 
     test('isAssistant returns true for assistant role', () {
-      final msg = baseMessage.copyWith(content: 'Hi!');
+      baseMessage.copyWith(content: 'Hi!');
       // Role is immutable via copyWith; create a new entity to test
-      final assistantMsg = MessageEntity(
+      final MessageEntity assistantMsg = MessageEntity(
         id: 'msg-2',
         conversationId: 'conv-1',
         role: MessageRole.assistant,
@@ -33,7 +33,7 @@ void main() {
     });
 
     test('isStreaming returns true when status is streaming', () {
-      final streaming = MessageEntity(
+      final MessageEntity streaming = MessageEntity(
         id: 'msg-3',
         conversationId: 'conv-1',
         role: MessageRole.assistant,
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('hasError returns true when status is error', () {
-      final errMsg = MessageEntity(
+      final MessageEntity errMsg = MessageEntity(
         id: 'msg-4',
         conversationId: 'conv-1',
         role: MessageRole.assistant,
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('copyWith updates content and status', () {
-      final updated = baseMessage.copyWith(
+      final MessageEntity updated = baseMessage.copyWith(
         content: 'Updated content',
         status: MessageStatus.error,
       );
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('equality is value-based via Equatable', () {
-      final copy = MessageEntity(
+      final MessageEntity copy = MessageEntity(
         id: baseMessage.id,
         conversationId: baseMessage.conversationId,
         role: baseMessage.role,

@@ -1,10 +1,29 @@
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
 import 'package:hive/hive.dart';
-import '../../domain/entities/message_entity.dart';
 
 part 'message_model.g.dart';
 
 @HiveType(typeId: 0)
 class MessageModel extends HiveObject {
+  MessageModel({
+    required this.id,
+    required this.conversationId,
+    required this.roleIndex,
+    required this.content,
+    required this.statusIndex,
+    required this.createdAt,
+    this.tokenCount,
+  });
+
+  factory MessageModel.fromEntity(MessageEntity entity) => MessageModel(
+    id: entity.id,
+    conversationId: entity.conversationId,
+    roleIndex: entity.role.index,
+    content: entity.content,
+    statusIndex: entity.status.index,
+    createdAt: entity.createdAt,
+    tokenCount: entity.tokenCount,
+  );
   @HiveField(0)
   final String id;
 
@@ -26,38 +45,20 @@ class MessageModel extends HiveObject {
   @HiveField(6)
   int? tokenCount;
 
-  MessageModel({
-    required this.id,
-    required this.conversationId,
-    required this.roleIndex,
-    required this.content,
-    required this.statusIndex,
-    required this.createdAt,
-    this.tokenCount,
-  });
-
-  factory MessageModel.fromEntity(MessageEntity entity) => MessageModel(
-        id: entity.id,
-        conversationId: entity.conversationId,
-        roleIndex: entity.role.index,
-        content: entity.content,
-        statusIndex: entity.status.index,
-        createdAt: entity.createdAt,
-        tokenCount: entity.tokenCount,
-      );
-
   MessageEntity toEntity() => MessageEntity(
-        id: id,
-        conversationId: conversationId,
-        role: MessageRole.values[roleIndex],
-        content: content,
-        status: MessageStatus.values[statusIndex],
-        createdAt: createdAt,
-        tokenCount: tokenCount,
-      );
+    id: id,
+    conversationId: conversationId,
+    role: MessageRole.values[roleIndex],
+    content: content,
+    status: MessageStatus.values[statusIndex],
+    createdAt: createdAt,
+    tokenCount: tokenCount,
+  );
 
-  Map<String, dynamic> toApiMap() => {
-        'role': MessageRole.values[roleIndex] == MessageRole.user ? 'user' : 'assistant',
-        'content': content,
-      };
+  Map<String, dynamic> toApiMap() => <String, dynamic>{
+    'role': MessageRole.values[roleIndex] == MessageRole.user
+        ? 'user'
+        : 'assistant',
+    'content': content,
+  };
 }

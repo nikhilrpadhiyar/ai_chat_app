@@ -1,7 +1,7 @@
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/features/conversation/data/models/conversation_model.dart';
 import 'package:hive/hive.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/error/exceptions.dart';
-import '../models/conversation_model.dart';
 
 class ConversationLocalDataSource {
   Box<ConversationModel> get _box =>
@@ -9,8 +9,10 @@ class ConversationLocalDataSource {
 
   List<ConversationModel> getAll() {
     try {
-      return _box.values.toList()
-        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return _box.values.toList()..sort(
+        (ConversationModel a, ConversationModel b) =>
+            b.updatedAt.compareTo(a.updatedAt),
+      );
     } catch (e) {
       throw CacheException('Failed to load conversations: $e');
     }

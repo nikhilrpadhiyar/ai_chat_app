@@ -1,57 +1,70 @@
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/conversation/data/datasources/conversation_local_datasource.dart';
+import 'package:ai_chat_app/features/conversation/data/models/conversation_model.dart';
+import 'package:ai_chat_app/features/conversation/domain/entities/conversation_entity.dart';
+import 'package:ai_chat_app/features/conversation/domain/repositories/conversation_repository.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../domain/entities/conversation_entity.dart';
-import '../../domain/repositories/conversation_repository.dart';
-import '../datasources/conversation_local_datasource.dart';
-import '../models/conversation_model.dart';
 
 class ConversationRepositoryImpl implements ConversationRepository {
-  final ConversationLocalDataSource _local;
-
   ConversationRepositoryImpl(this._local);
+
+  final ConversationLocalDataSource _local;
 
   @override
   Future<Either<Failure, List<ConversationEntity>>> getConversations() async {
     try {
-      final models = _local.getAll();
-      return Right(models.map((m) => m.toEntity()).toList());
+      final List<ConversationModel> models = _local.getAll();
+      return Right<Failure, List<ConversationEntity>>(
+        models.map((ConversationModel m) => m.toEntity()).toList(),
+      );
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, List<ConversationEntity>>(CacheFailure(e.message));
     }
   }
 
   @override
   Future<Either<Failure, ConversationEntity>> getConversation(String id) async {
     try {
-      final model = _local.getById(id);
-      if (model == null) return const Left(CacheFailure('Conversation not found'));
-      return Right(model.toEntity());
+      final ConversationModel? model = _local.getById(id);
+      if (model == null) {
+        return const Left<Failure, ConversationEntity>(
+          CacheFailure('Conversation not found'),
+        );
+      }
+      return Right<Failure, ConversationEntity>(model.toEntity());
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, ConversationEntity>(CacheFailure(e.message));
     }
   }
 
   @override
   Future<Either<Failure, ConversationEntity>> createConversation(
-      ConversationEntity conversation) async {
+    ConversationEntity conversation,
+  ) async {
     try {
-      final model = ConversationModel.fromEntity(conversation);
+      final ConversationModel model = ConversationModel.fromEntity(
+        conversation,
+      );
       await _local.save(model);
-      return Right(conversation);
+      return Right<Failure, ConversationEntity>(conversation);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, ConversationEntity>(CacheFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, void>> updateConversation(ConversationEntity conversation) async {
+  Future<Either<Failure, void>> updateConversation(
+    ConversationEntity conversation,
+  ) async {
     try {
-      final model = ConversationModel.fromEntity(conversation);
+      final ConversationModel model = ConversationModel.fromEntity(
+        conversation,
+      );
       await _local.save(model);
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 
@@ -59,14 +72,17 @@ class ConversationRepositoryImpl implements ConversationRepository {
   Future<Either<Failure, void>> deleteConversation(String id) async {
     try {
       await _local.delete(id);
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 
   @override
   Stream<List<ConversationEntity>> watchConversations() {
-    return _local.watch().map((models) => models.map((m) => m.toEntity()).toList());
+    return _local.watch().map(
+      (List<ConversationModel> models) =>
+          models.map((ConversationModel m) => m.toEntity()).toList(),
+    );
   }
 }

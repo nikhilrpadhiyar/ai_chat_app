@@ -1,12 +1,12 @@
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/storage/secure_storage_service.dart';
+import 'package:ai_chat_app/core/storage/storage_service.dart';
+import 'package:ai_chat_app/core/theme/app_colors.dart';
+import 'package:ai_chat_app/core/theme/app_text_styles.dart';
+import 'package:ai_chat_app/core/utils/validators.dart';
+import 'package:ai_chat_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/validators.dart';
-import '../../../../core/storage/secure_storage_service.dart';
-import '../../../../core/storage/storage_service.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../routes/app_routes.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -16,8 +16,8 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  final _apiKeyCtrl = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _apiKeyCtrl = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _obscure = true;
   bool _saving = false;
 
@@ -30,8 +30,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Future<void> _saveAndContinue() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    final secureStorage = Get.find<SecureStorageService>();
-    final storage = Get.find<StorageService>();
+    final SecureStorageService secureStorage = Get.find<SecureStorageService>();
+    final StorageService storage = Get.find<StorageService>();
     await secureStorage.write(AppConstants.apiKeyKey, _apiKeyCtrl.text.trim());
     await storage.write('onboarding_done', true);
     Get.offAllNamed(AppRoutes.conversations);
@@ -47,7 +47,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 const SizedBox(height: 48),
                 Center(
                   child: Container(
@@ -57,24 +57,33 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Icon(Icons.auto_awesome,
-                        size: 48, color: Colors.white),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 48,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
                 Center(
-                  child: Text('AI Chat App',
-                      style: Theme.of(context).textTheme.displayLarge),
+                  child: Text(
+                    'AI Chat App',
+                    style: Theme.of(context).textTheme.displayLarge,
+                  ),
                 ),
                 Center(
                   child: Text(
                     'Powered by Claude',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 48),
-                Text('Get Started', style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  'Get Started',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Enter your Anthropic API key to start chatting. Your key is stored securely on your device.',
@@ -89,8 +98,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     hintText: 'sk-ant-api03-...',
                     prefixIcon: const Icon(Icons.key_outlined),
                     suffixIcon: IconButton(
-                      icon:
-                          Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(
+                        _obscure ? Icons.visibility : Icons.visibility_off,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -111,30 +121,34 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Text('Start Chatting'),
                   ),
                 ),
                 const SizedBox(height: 48),
                 _FeatureRow(
-                    icon: Icons.stream,
-                    title: 'Streaming Responses',
-                    subtitle: 'See Claude\'s replies as they\'re generated'),
+                  icon: Icons.stream,
+                  title: 'Streaming Responses',
+                  subtitle: 'See Claude\'s replies as they\'re generated',
+                ),
                 _FeatureRow(
-                    icon: Icons.history,
-                    title: 'Conversation History',
-                    subtitle:
-                        'All chats saved locally, private by default'),
+                  icon: Icons.history,
+                  title: 'Conversation History',
+                  subtitle: 'All chats saved locally, private by default',
+                ),
                 _FeatureRow(
-                    icon: Icons.mic,
-                    title: 'Voice Input',
-                    subtitle: 'Dictate messages with your voice'),
+                  icon: Icons.mic,
+                  title: 'Voice Input',
+                  subtitle: 'Dictate messages with your voice',
+                ),
                 _FeatureRow(
-                    icon: Icons.text_snippet_outlined,
-                    title: 'Prompt Templates',
-                    subtitle:
-                        'Quick-start with built-in or custom templates'),
+                  icon: Icons.text_snippet_outlined,
+                  title: 'Prompt Templates',
+                  subtitle: 'Quick-start with built-in or custom templates',
+                ),
               ],
             ),
           ),
@@ -145,22 +159,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class _FeatureRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
   const _FeatureRow({
     required this.icon,
     required this.title,
     required this.subtitle,
   });
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
-        children: [
+        children: <Widget>[
           Container(
             width: 44,
             height: 44,
@@ -174,7 +187,7 @@ class _FeatureRow extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 Text(title, style: AppTextStyles.titleMedium),
                 Text(subtitle, style: AppTextStyles.bodySmall),
               ],

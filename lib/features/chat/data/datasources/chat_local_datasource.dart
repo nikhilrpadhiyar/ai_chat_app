@@ -1,10 +1,11 @@
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/features/chat/data/models/message_model.dart';
 import 'package:hive/hive.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/error/exceptions.dart';
-import '../models/message_model.dart';
 
 class ChatLocalDataSource {
-  Box<MessageModel> get _box => Hive.box<MessageModel>(AppConstants.messagesBox);
+  Box<MessageModel> get _box =>
+      Hive.box<MessageModel>(AppConstants.messagesBox);
 
   Future<void> saveMessage(MessageModel model) async {
     try {
@@ -17,9 +18,12 @@ class ChatLocalDataSource {
   List<MessageModel> getMessages(String conversationId) {
     try {
       return _box.values
-          .where((m) => m.conversationId == conversationId)
+          .where((MessageModel m) => m.conversationId == conversationId)
           .toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        ..sort(
+          (MessageModel a, MessageModel b) =>
+              a.createdAt.compareTo(b.createdAt),
+        );
     } catch (e) {
       throw CacheException('Failed to load messages: $e');
     }
@@ -35,9 +39,9 @@ class ChatLocalDataSource {
 
   Future<void> clearMessages(String conversationId) async {
     try {
-      final keys = _box.values
-          .where((m) => m.conversationId == conversationId)
-          .map((m) => m.id)
+      final List<String> keys = _box.values
+          .where((MessageModel m) => m.conversationId == conversationId)
+          .map((MessageModel m) => m.id)
           .toList();
       await _box.deleteAll(keys);
     } catch (e) {

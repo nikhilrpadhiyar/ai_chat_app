@@ -1,7 +1,7 @@
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/features/prompt_templates/data/models/prompt_template_model.dart';
 import 'package:hive/hive.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/error/exceptions.dart';
-import '../models/prompt_template_model.dart';
 
 class PromptTemplateLocalDataSource {
   Box<PromptTemplateModel> get _box =>
@@ -9,8 +9,10 @@ class PromptTemplateLocalDataSource {
 
   List<PromptTemplateModel> getAll() {
     try {
-      return _box.values.toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return _box.values.toList()..sort(
+        (PromptTemplateModel a, PromptTemplateModel b) =>
+            b.createdAt.compareTo(a.createdAt),
+      );
     } catch (e) {
       throw CacheException('Failed to load templates: $e');
     }

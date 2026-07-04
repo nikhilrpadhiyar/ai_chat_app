@@ -1,28 +1,27 @@
+import 'package:ai_chat_app/core/theme/app_colors.dart';
+import 'package:ai_chat_app/core/theme/app_text_styles.dart';
+import 'package:ai_chat_app/core/utils/extensions.dart';
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import '../../domain/entities/message_entity.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/extensions.dart';
 
 class MessageBubble extends StatelessWidget {
-  final MessageEntity message;
-  final bool isStreaming;
-  final String streamingContent;
-
   const MessageBubble({
     super.key,
     required this.message,
     this.isStreaming = false,
     this.streamingContent = '',
   });
+  final MessageEntity message;
+  final bool isStreaming;
+  final String streamingContent;
 
   @override
   Widget build(BuildContext context) {
-    final isUser = message.isUser;
-    final isDark = context.isDark;
-    final content = isStreaming && message.isAssistant
+    final bool isUser = message.isUser;
+    final bool isDark = context.isDark;
+    final String content = isStreaming && message.isAssistant
         ? streamingContent
         : message.content;
 
@@ -33,25 +32,30 @@ class MessageBubble extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
           child: Column(
-            crossAxisAlignment:
-                isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
+            crossAxisAlignment: isUser
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: <Widget>[
               _buildBubble(context, content, isUser, isDark),
               const SizedBox(height: 2),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Text(
                     message.createdAt.timeOnly,
                     style: AppTextStyles.labelSmall,
                   ),
-                  if (isStreaming && message.isAssistant) ...[
+                  if (isStreaming && message.isAssistant) ...<Widget>[
                     const SizedBox(width: 4),
                     _TypingIndicator(),
                   ],
-                  if (message.hasError) ...[
+                  if (message.hasError) ...<Widget>[
                     const SizedBox(width: 4),
-                    const Icon(Icons.error_outline, size: 12, color: AppColors.error),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 12,
+                      color: AppColors.error,
+                    ),
                   ],
                 ],
               ),
@@ -63,7 +67,11 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildBubble(
-      BuildContext context, String content, bool isUser, bool isDark) {
+    BuildContext context,
+    String content,
+    bool isUser,
+    bool isDark,
+  ) {
     return GestureDetector(
       onLongPress: () => _copyToClipboard(context, content),
       child: Container(
@@ -94,8 +102,9 @@ class MessageBubble extends StatelessWidget {
   }
 
   MarkdownStyleSheet _markdownStyle(BuildContext context, bool isDark) {
-    final textColor =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final Color textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
     return MarkdownStyleSheet(
       p: AppTextStyles.chatMessage.copyWith(color: textColor),
       h1: AppTextStyles.headlineMedium.copyWith(color: textColor),
@@ -103,22 +112,25 @@ class MessageBubble extends StatelessWidget {
       h3: AppTextStyles.titleMedium.copyWith(color: textColor),
       code: AppTextStyles.codeBlock.copyWith(
         color: isDark ? Colors.greenAccent : AppColors.primaryDark,
-        backgroundColor:
-            isDark ? const Color(0xFF2A2A45) : const Color(0xFFEEECFF),
+        backgroundColor: isDark
+            ? const Color(0xFF2A2A45)
+            : const Color(0xFFEEECFF),
       ),
       codeblockDecoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A35) : const Color(0xFFF0EEFF),
         borderRadius: BorderRadius.circular(8),
       ),
       blockquoteDecoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(color: AppColors.primary, width: 3),
-        ),
+        border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
       ),
-      strong: AppTextStyles.chatMessage
-          .copyWith(fontWeight: FontWeight.bold, color: textColor),
-      em: AppTextStyles.chatMessage
-          .copyWith(fontStyle: FontStyle.italic, color: textColor),
+      strong: AppTextStyles.chatMessage.copyWith(
+        fontWeight: FontWeight.bold,
+        color: textColor,
+      ),
+      em: AppTextStyles.chatMessage.copyWith(
+        fontStyle: FontStyle.italic,
+        color: textColor,
+      ),
       listBullet: AppTextStyles.chatMessage.copyWith(color: textColor),
     );
   }
@@ -126,7 +138,10 @@ class MessageBubble extends StatelessWidget {
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard'), duration: Duration(seconds: 2)),
+      const SnackBar(
+        content: Text('Copied to clipboard'),
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 }
@@ -161,9 +176,9 @@ class _TypingIndicatorState extends State<_TypingIndicator>
       animation: _controller,
       builder: (_, __) => Row(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(
+        children: List<Widget>.generate(
           3,
-          (i) => Padding(
+          (int i) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 1.5),
             child: Transform.translate(
               offset: Offset(

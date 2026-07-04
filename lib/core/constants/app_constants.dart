@@ -15,7 +15,7 @@ abstract class AppConstants {
 
   // AI models
   static const String defaultModel = 'claude-sonnet-4-6';
-  static const List<String> availableModels = [
+  static const List<String> availableModels = <String>[
     'claude-sonnet-4-6',
     'claude-haiku-4-5-20251001',
     'claude-opus-4-8',

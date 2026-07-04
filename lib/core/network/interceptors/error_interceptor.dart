@@ -1,5 +1,5 @@
+import 'package:ai_chat_app/core/error/exceptions.dart';
 import 'package:dio/dio.dart';
-import '../../error/exceptions.dart';
 
 class ErrorInterceptor extends Interceptor {
   @override
@@ -10,13 +10,13 @@ class ErrorInterceptor extends Interceptor {
         err.type == DioExceptionType.unknown) {
       mapped = const NetworkException();
     } else if (err.response != null) {
-      final status = err.response!.statusCode ?? 0;
+      final int status = err.response!.statusCode ?? 0;
       if (status == 401) {
         mapped = const UnauthorizedException();
       } else if (status == 429) {
         mapped = const RateLimitException();
       } else {
-        final msg = _extractMessage(err.response);
+        final String msg = _extractMessage(err.response);
         mapped = ApiException(msg, statusCode: status);
       }
     } else if (err.type == DioExceptionType.connectionTimeout ||
@@ -37,9 +37,9 @@ class ErrorInterceptor extends Interceptor {
     );
   }
 
-  String _extractMessage(Response? response) {
+  String _extractMessage(Response<dynamic>? response) {
     try {
-      final data = response?.data;
+      final dynamic data = response?.data;
       if (data is Map) {
         return data['error']?['message']?.toString() ??
             data['message']?.toString() ??

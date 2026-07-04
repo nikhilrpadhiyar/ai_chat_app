@@ -1,38 +1,49 @@
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/prompt_templates/data/datasources/prompt_template_local_datasource.dart';
+import 'package:ai_chat_app/features/prompt_templates/data/models/prompt_template_model.dart';
+import 'package:ai_chat_app/features/prompt_templates/domain/entities/prompt_template_entity.dart';
+import 'package:ai_chat_app/features/prompt_templates/domain/repositories/prompt_template_repository.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../domain/entities/prompt_template_entity.dart';
-import '../../domain/repositories/prompt_template_repository.dart';
-import '../datasources/prompt_template_local_datasource.dart';
-import '../models/prompt_template_model.dart';
 
 class PromptTemplateRepositoryImpl implements PromptTemplateRepository {
-  final PromptTemplateLocalDataSource _local;
-
   PromptTemplateRepositoryImpl(this._local);
+
+  final PromptTemplateLocalDataSource _local;
 
   @override
   Future<Either<Failure, List<PromptTemplateEntity>>> getAllTemplates() async {
     try {
-      final stored = _local.getAll().map((m) => m.toEntity()).toList();
+      final List<PromptTemplateEntity> stored = _local
+          .getAll()
+          .map((PromptTemplateModel m) => m.toEntity())
+          .toList();
       // Merge built-ins with user templates (built-ins always first)
-      final builtIns = BuiltInTemplates.all;
-      final userTemplates = stored.where((t) => !t.isBuiltIn).toList();
-      return Right([...builtIns, ...userTemplates]);
+      final List<PromptTemplateEntity> builtIns = BuiltInTemplates.all;
+      final List<PromptTemplateEntity> userTemplates = stored
+          .where((PromptTemplateEntity t) => !t.isBuiltIn)
+          .toList();
+      return Right<Failure, List<PromptTemplateEntity>>(<PromptTemplateEntity>[
+        ...builtIns,
+        ...userTemplates,
+      ]);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, List<PromptTemplateEntity>>(CacheFailure(e.message));
     }
   }
 
   @override
   Future<Either<Failure, PromptTemplateEntity>> saveTemplate(
-      PromptTemplateEntity template) async {
+    PromptTemplateEntity template,
+  ) async {
     try {
-      final model = PromptTemplateModel.fromEntity(template);
+      final PromptTemplateModel model = PromptTemplateModel.fromEntity(
+        template,
+      );
       await _local.save(model);
-      return Right(template);
+      return Right<Failure, PromptTemplateEntity>(template);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, PromptTemplateEntity>(CacheFailure(e.message));
     }
   }
 
@@ -40,9 +51,9 @@ class PromptTemplateRepositoryImpl implements PromptTemplateRepository {
   Future<Either<Failure, void>> deleteTemplate(String id) async {
     try {
       await _local.delete(id);
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 }

@@ -1,17 +1,16 @@
+import 'package:ai_chat_app/core/error/exceptions.dart';
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/chat/data/datasources/chat_local_datasource.dart';
+import 'package:ai_chat_app/features/chat/data/datasources/chat_remote_datasource.dart';
+import 'package:ai_chat_app/features/chat/data/models/message_model.dart';
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
+import 'package:ai_chat_app/features/chat/domain/repositories/chat_repository.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../domain/entities/message_entity.dart';
-import '../../domain/repositories/chat_repository.dart';
-import '../datasources/chat_local_datasource.dart';
-import '../datasources/chat_remote_datasource.dart';
-import '../models/message_model.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
+  ChatRepositoryImpl(this._remote, this._local);
   final ChatRemoteDataSource _remote;
   final ChatLocalDataSource _local;
-
-  ChatRepositoryImpl(this._remote, this._local);
 
   @override
   Stream<Either<Failure, String>> sendMessageStream({
@@ -29,17 +28,17 @@ class ChatRepositoryImpl implements ChatRepository {
             model: model,
             systemPrompt: systemPrompt,
           )
-          .map((token) => Right<Failure, String>(token));
+          .map((String token) => Right<Failure, String>(token));
     } on UnauthorizedException catch (e) {
-      yield Left(UnauthorizedFailure(e.message));
+      yield Left<Failure, String>(UnauthorizedFailure(e.message));
     } on RateLimitException catch (e) {
-      yield Left(RateLimitFailure(e.message));
+      yield Left<Failure, String>(RateLimitFailure(e.message));
     } on NetworkException catch (e) {
-      yield Left(NetworkFailure(e.message));
+      yield Left<Failure, String>(NetworkFailure(e.message));
     } on StreamException catch (e) {
-      yield Left(StreamFailure(e.message));
+      yield Left<Failure, String>(StreamFailure(e.message));
     } on AppException catch (e) {
-      yield Left(ApiFailure(e.message));
+      yield Left<Failure, String>(ApiFailure(e.message));
     }
   }
 
@@ -47,19 +46,23 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<Either<Failure, void>> saveMessage(MessageEntity message) async {
     try {
       await _local.saveMessage(MessageModel.fromEntity(message));
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, List<MessageEntity>>> getMessages(String conversationId) async {
+  Future<Either<Failure, List<MessageEntity>>> getMessages(
+    String conversationId,
+  ) async {
     try {
-      final models = _local.getMessages(conversationId);
-      return Right(models.map((m) => m.toEntity()).toList());
+      final List<MessageModel> models = _local.getMessages(conversationId);
+      return Right<Failure, List<MessageEntity>>(
+        models.map((MessageModel m) => m.toEntity()).toList(),
+      );
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, List<MessageEntity>>(CacheFailure(e.message));
     }
   }
 
@@ -67,9 +70,9 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<Either<Failure, void>> deleteMessage(String messageId) async {
     try {
       await _local.deleteMessage(messageId);
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 
@@ -77,9 +80,9 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<Either<Failure, void>> clearMessages(String conversationId) async {
     try {
       await _local.clearMessages(conversationId);
-      return const Right(null);
+      return const Right<Failure, void>(null);
     } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return Left<Failure, void>(CacheFailure(e.message));
     }
   }
 }

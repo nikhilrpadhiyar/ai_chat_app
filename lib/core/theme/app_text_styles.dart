@@ -1,5 +1,5 @@
+import 'package:ai_chat_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 abstract class AppTextStyles {
   static const String _fontFamily = 'Poppins';

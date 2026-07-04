@@ -1,10 +1,10 @@
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/conversation/domain/repositories/conversation_repository.dart';
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../repositories/conversation_repository.dart';
 
 class DeleteConversationUseCase {
-  final ConversationRepository _repository;
   const DeleteConversationUseCase(this._repository);
+  final ConversationRepository _repository;
 
   Future<Either<Failure, void>> call(String id) =>
       _repository.deleteConversation(id);

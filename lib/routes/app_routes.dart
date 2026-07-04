@@ -1,9 +1,9 @@
 part of 'app_pages.dart';
 
 abstract class AppRoutes {
-  static const conversations = '/conversations';
-  static const chat = '/chat';
-  static const promptTemplates = '/prompt-templates';
-  static const settings = '/settings';
-  static const onboarding = '/onboarding';
+  static const String conversations = '/conversations';
+  static const String chat = '/chat';
+  static const String promptTemplates = '/prompt-templates';
+  static const String settings = '/settings';
+  static const String onboarding = '/onboarding';
 }

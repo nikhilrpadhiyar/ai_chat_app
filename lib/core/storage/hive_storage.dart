@@ -1,9 +1,9 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveStorage {
-  static final HiveStorage _instance = HiveStorage._internal();
   factory HiveStorage() => _instance;
   HiveStorage._internal();
+  static final HiveStorage _instance = HiveStorage._internal();
 
   Box<T> box<T>(String name) => Hive.box<T>(name);
 

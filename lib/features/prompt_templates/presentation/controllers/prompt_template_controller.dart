@@ -1,17 +1,18 @@
+import 'package:ai_chat_app/core/error/failures.dart';
+import 'package:ai_chat_app/features/prompt_templates/domain/entities/prompt_template_entity.dart';
+import 'package:ai_chat_app/features/prompt_templates/domain/repositories/prompt_template_repository.dart';
+import 'package:dartz/dartz.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-import '../../domain/entities/prompt_template_entity.dart';
-import '../../domain/repositories/prompt_template_repository.dart';
 
 class PromptTemplateController extends GetxController {
+  PromptTemplateController(this._repository);
   final PromptTemplateRepository _repository;
 
-  PromptTemplateController(this._repository);
-
-  final templates = <PromptTemplateEntity>[].obs;
-  final isLoading = false.obs;
-  final errorMessage = RxnString();
-  final _uuid = const Uuid();
+  final RxList<PromptTemplateEntity> templates = <PromptTemplateEntity>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxnString errorMessage = RxnString();
+  final Uuid _uuid = const Uuid();
 
   @override
   void onInit() {
@@ -21,10 +22,11 @@ class PromptTemplateController extends GetxController {
 
   Future<void> loadTemplates() async {
     isLoading.value = true;
-    final result = await _repository.getAllTemplates();
+    final Either<Failure, List<PromptTemplateEntity>> result = await _repository
+        .getAllTemplates();
     result.fold(
-      (f) => errorMessage.value = f.message,
-      (list) => templates.assignAll(list),
+      (Failure f) => errorMessage.value = f.message,
+      (List<PromptTemplateEntity> list) => templates.assignAll(list),
     );
     isLoading.value = false;
   }
@@ -36,44 +38,50 @@ class PromptTemplateController extends GetxController {
     String? emoji,
     String? existingId,
   }) async {
-    final now = DateTime.now();
-    final template = PromptTemplateEntity(
+    final DateTime now = DateTime.now();
+    final PromptTemplateEntity template = PromptTemplateEntity(
       id: existingId ?? _uuid.v4(),
       name: name.trim(),
       prompt: prompt.trim(),
       description: description?.trim(),
       emoji: emoji,
       createdAt: existingId != null
-          ? templates.firstWhere((t) => t.id == existingId).createdAt
+          ? templates
+                .firstWhere((PromptTemplateEntity t) => t.id == existingId)
+                .createdAt
           : now,
     );
 
-    final result = await _repository.saveTemplate(template);
-    result.fold(
-      (f) => errorMessage.value = f.message,
-      (saved) {
-        final idx = templates.indexWhere((t) => t.id == saved.id);
-        if (idx != -1) {
-          templates[idx] = saved;
-        } else {
-          templates.add(saved);
-        }
-      },
-    );
+    final Either<Failure, PromptTemplateEntity> result = await _repository
+        .saveTemplate(template);
+    result.fold((Failure f) => errorMessage.value = f.message, (
+      PromptTemplateEntity saved,
+    ) {
+      final int idx = templates.indexWhere(
+        (PromptTemplateEntity t) => t.id == saved.id,
+      );
+      if (idx != -1) {
+        templates[idx] = saved;
+      } else {
+        templates.add(saved);
+      }
+    });
   }
 
   Future<void> deleteTemplate(String id) async {
     // Prevent deleting built-in templates
-    final template = templates.firstWhereOrNull((t) => t.id == id);
+    final PromptTemplateEntity? template = templates.firstWhereOrNull(
+      (PromptTemplateEntity t) => t.id == id,
+    );
     if (template?.isBuiltIn == true) {
       Get.snackbar('Cannot Delete', 'Built-in templates cannot be deleted');
       return;
     }
 
-    final result = await _repository.deleteTemplate(id);
+    final Either<Failure, void> result = await _repository.deleteTemplate(id);
     result.fold(
-      (f) => errorMessage.value = f.message,
-      (_) => templates.removeWhere((t) => t.id == id),
+      (Failure f) => errorMessage.value = f.message,
+      (_) => templates.removeWhere((PromptTemplateEntity t) => t.id == id),
     );
   }
 }

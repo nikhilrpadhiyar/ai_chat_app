@@ -1,9 +1,9 @@
 import 'package:get_storage/get_storage.dart';
 
 class StorageService {
-  static final StorageService _instance = StorageService._internal();
   factory StorageService() => _instance;
   StorageService._internal();
+  static final StorageService _instance = StorageService._internal();
 
   late final GetStorage _box;
 

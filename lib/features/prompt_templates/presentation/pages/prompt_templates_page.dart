@@ -1,22 +1,23 @@
+import 'package:ai_chat_app/core/theme/app_colors.dart';
+import 'package:ai_chat_app/core/theme/app_text_styles.dart';
+import 'package:ai_chat_app/features/chat/presentation/controllers/chat_controller.dart';
+import 'package:ai_chat_app/features/prompt_templates/domain/entities/prompt_template_entity.dart';
+import 'package:ai_chat_app/features/prompt_templates/presentation/controllers/prompt_template_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../domain/entities/prompt_template_entity.dart';
-import '../controllers/prompt_template_controller.dart';
-import '../../../chat/presentation/controllers/chat_controller.dart';
 
 class PromptTemplatesPage extends StatelessWidget {
   const PromptTemplatesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PromptTemplateController>();
+    final PromptTemplateController controller =
+        Get.find<PromptTemplateController>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prompt Templates'),
-        actions: [
+        actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showAddDialog(context, controller),
@@ -28,32 +29,38 @@ class PromptTemplatesPage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final builtIn =
-            controller.templates.where((t) => t.isBuiltIn).toList();
-        final custom =
-            controller.templates.where((t) => !t.isBuiltIn).toList();
+        final List<PromptTemplateEntity> builtIn = controller.templates
+            .where((PromptTemplateEntity t) => t.isBuiltIn)
+            .toList();
+        final List<PromptTemplateEntity> custom = controller.templates
+            .where((PromptTemplateEntity t) => !t.isBuiltIn)
+            .toList();
 
         return ListView(
           padding: const EdgeInsets.all(16),
-          children: [
-            if (builtIn.isNotEmpty) ...[
+          children: <Widget>[
+            if (builtIn.isNotEmpty) ...<Widget>[
               _SectionHeader(title: 'Built-in Templates'),
               const SizedBox(height: 8),
-              ...builtIn.map((t) => _TemplateCard(
-                    template: t,
-                    controller: controller,
-                    onUse: () => _useTemplate(context, t),
-                  )),
+              ...builtIn.map(
+                (PromptTemplateEntity t) => _TemplateCard(
+                  template: t,
+                  controller: controller,
+                  onUse: () => _useTemplate(context, t),
+                ),
+              ),
             ],
-            if (custom.isNotEmpty) ...[
+            if (custom.isNotEmpty) ...<Widget>[
               const SizedBox(height: 16),
               _SectionHeader(title: 'My Templates'),
               const SizedBox(height: 8),
-              ...custom.map((t) => _TemplateCard(
-                    template: t,
-                    controller: controller,
-                    onUse: () => _useTemplate(context, t),
-                  )),
+              ...custom.map(
+                (PromptTemplateEntity t) => _TemplateCard(
+                  template: t,
+                  controller: controller,
+                  onUse: () => _useTemplate(context, t),
+                ),
+              ),
             ],
           ],
         );
@@ -63,7 +70,7 @@ class PromptTemplatesPage extends StatelessWidget {
 
   void _useTemplate(BuildContext context, PromptTemplateEntity template) {
     try {
-      final chatController = Get.find<ChatController>();
+      final ChatController chatController = Get.find<ChatController>();
       chatController.applyTemplate(template.prompt);
       Get.back();
     } catch (_) {
@@ -72,11 +79,13 @@ class PromptTemplatesPage extends StatelessWidget {
   }
 
   void _showAddDialog(
-      BuildContext context, PromptTemplateController controller) {
-    final nameCtrl = TextEditingController();
-    final promptCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    BuildContext context,
+    PromptTemplateController controller,
+  ) {
+    final TextEditingController nameCtrl = TextEditingController();
+    final TextEditingController promptCtrl = TextEditingController();
+    final TextEditingController descCtrl = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     Get.dialog(
       AlertDialog(
@@ -86,38 +95,35 @@ class PromptTemplatesPage extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: <Widget>[
                 TextFormField(
                   controller: nameCtrl,
                   decoration: const InputDecoration(labelText: 'Name'),
-                  validator: (v) =>
-                      v == null || v.trim().length < 3
-                          ? 'At least 3 characters'
-                          : null,
+                  validator: (String? v) => v == null || v.trim().length < 3
+                      ? 'At least 3 characters'
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: descCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Description (optional)'),
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: promptCtrl,
                   decoration: const InputDecoration(labelText: 'Prompt'),
                   maxLines: 4,
-                  validator: (v) =>
+                  validator: (String? v) =>
                       v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
               ],
             ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: Get.back,
-            child: const Text('Cancel'),
-          ),
+        actions: <Widget>[
+          TextButton(onPressed: Get.back, child: const Text('Cancel')),
           FilledButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
@@ -137,8 +143,8 @@ class PromptTemplatesPage extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  final String title;
   const _SectionHeader({required this.title});
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -147,15 +153,14 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _TemplateCard extends StatelessWidget {
-  final PromptTemplateEntity template;
-  final PromptTemplateController controller;
-  final VoidCallback onUse;
-
   const _TemplateCard({
     required this.template,
     required this.controller,
     required this.onUse,
   });
+  final PromptTemplateEntity template;
+  final PromptTemplateController controller;
+  final VoidCallback onUse;
 
   @override
   Widget build(BuildContext context) {
@@ -167,17 +172,23 @@ class _TemplateCard extends StatelessWidget {
             ? Text(template.emoji!, style: const TextStyle(fontSize: 24))
             : CircleAvatar(
                 backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                child: const Icon(Icons.text_snippet_outlined,
-                    color: AppColors.primary, size: 18),
+                child: const Icon(
+                  Icons.text_snippet_outlined,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
               ),
         title: Text(template.name, style: AppTextStyles.titleMedium),
         subtitle: template.description != null
-            ? Text(template.description!,
-                style: AppTextStyles.bodySmall, maxLines: 1)
+            ? Text(
+                template.description!,
+                style: AppTextStyles.bodySmall,
+                maxLines: 1,
+              )
             : null,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             if (!template.isBuiltIn)
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 20),

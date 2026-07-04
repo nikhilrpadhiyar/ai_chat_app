@@ -1,10 +1,30 @@
+import 'package:ai_chat_app/features/prompt_templates/domain/entities/prompt_template_entity.dart';
 import 'package:hive/hive.dart';
-import '../../domain/entities/prompt_template_entity.dart';
 
 part 'prompt_template_model.g.dart';
 
 @HiveType(typeId: 2)
 class PromptTemplateModel extends HiveObject {
+  PromptTemplateModel({
+    required this.id,
+    required this.name,
+    required this.prompt,
+    this.description,
+    this.emoji,
+    required this.isBuiltIn,
+    required this.createdAt,
+  });
+
+  factory PromptTemplateModel.fromEntity(PromptTemplateEntity entity) =>
+      PromptTemplateModel(
+        id: entity.id,
+        name: entity.name,
+        prompt: entity.prompt,
+        description: entity.description,
+        emoji: entity.emoji,
+        isBuiltIn: entity.isBuiltIn,
+        createdAt: entity.createdAt,
+      );
   @HiveField(0)
   final String id;
 
@@ -26,34 +46,13 @@ class PromptTemplateModel extends HiveObject {
   @HiveField(6)
   final DateTime createdAt;
 
-  PromptTemplateModel({
-    required this.id,
-    required this.name,
-    required this.prompt,
-    this.description,
-    this.emoji,
-    required this.isBuiltIn,
-    required this.createdAt,
-  });
-
-  factory PromptTemplateModel.fromEntity(PromptTemplateEntity entity) =>
-      PromptTemplateModel(
-        id: entity.id,
-        name: entity.name,
-        prompt: entity.prompt,
-        description: entity.description,
-        emoji: entity.emoji,
-        isBuiltIn: entity.isBuiltIn,
-        createdAt: entity.createdAt,
-      );
-
   PromptTemplateEntity toEntity() => PromptTemplateEntity(
-        id: id,
-        name: name,
-        prompt: prompt,
-        description: description,
-        emoji: emoji,
-        isBuiltIn: isBuiltIn,
-        createdAt: createdAt,
-      );
+    id: id,
+    name: name,
+    prompt: prompt,
+    description: description,
+    emoji: emoji,
+    isBuiltIn: isBuiltIn,
+    createdAt: createdAt,
+  );
 }

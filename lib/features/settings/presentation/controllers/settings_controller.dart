@@ -1,21 +1,20 @@
+import 'package:ai_chat_app/core/constants/app_constants.dart';
+import 'package:ai_chat_app/core/storage/secure_storage_service.dart';
+import 'package:ai_chat_app/core/storage/storage_service.dart';
+import 'package:ai_chat_app/core/utils/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/storage/secure_storage_service.dart';
-import '../../../../core/storage/storage_service.dart';
-import '../../../../core/utils/validators.dart';
 
 class SettingsController extends GetxController {
+  SettingsController(this._storage, this._secureStorage);
   final StorageService _storage;
   final SecureStorageService _secureStorage;
 
-  SettingsController(this._storage, this._secureStorage);
-
-  final isDarkMode = false.obs;
-  final selectedModel = AppConstants.defaultModel.obs;
-  final systemPrompt = ''.obs;
-  final hasApiKey = false.obs;
-  final isLoadingApiKey = false.obs;
+  final RxBool isDarkMode = false.obs;
+  final RxString selectedModel = AppConstants.defaultModel.obs;
+  final RxString systemPrompt = ''.obs;
+  final RxBool hasApiKey = false.obs;
+  final RxBool isLoadingApiKey = false.obs;
 
   @override
   void onInit() {
@@ -26,8 +25,10 @@ class SettingsController extends GetxController {
   Future<void> _loadSettings() async {
     isDarkMode.value = _storage.read<bool>(AppConstants.themeKey) ?? false;
     selectedModel.value =
-        _storage.read<String>(AppConstants.selectedModelKey) ?? AppConstants.defaultModel;
-    systemPrompt.value = _storage.read<String>(AppConstants.systemPromptKey) ?? '';
+        _storage.read<String>(AppConstants.selectedModelKey) ??
+        AppConstants.defaultModel;
+    systemPrompt.value =
+        _storage.read<String>(AppConstants.systemPromptKey) ?? '';
     hasApiKey.value = await _secureStorage.containsKey(AppConstants.apiKeyKey);
   }
 
@@ -48,21 +49,33 @@ class SettingsController extends GetxController {
   }
 
   Future<void> saveApiKey(String key) async {
-    final error = Validators.apiKey(key);
+    final String? error = Validators.apiKey(key);
     if (error != null) {
-      Get.snackbar('Invalid API Key', error, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Invalid API Key',
+        error,
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     isLoadingApiKey.value = true;
     await _secureStorage.write(AppConstants.apiKeyKey, key.trim());
     hasApiKey.value = true;
     isLoadingApiKey.value = false;
-    Get.snackbar('Success', 'API key saved securely', snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Success',
+      'API key saved securely',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   Future<void> deleteApiKey() async {
     await _secureStorage.delete(AppConstants.apiKeyKey);
     hasApiKey.value = false;
-    Get.snackbar('Removed', 'API key deleted', snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Removed',
+      'API key deleted',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 }

@@ -1,20 +1,22 @@
+import 'package:ai_chat_app/core/theme/app_colors.dart';
+import 'package:ai_chat_app/core/theme/app_text_styles.dart';
+import 'package:ai_chat_app/features/chat/domain/entities/message_entity.dart';
+import 'package:ai_chat_app/features/chat/presentation/controllers/chat_controller.dart';
+import 'package:ai_chat_app/features/chat/presentation/widgets/chat_input_bar.dart';
+import 'package:ai_chat_app/features/chat/presentation/widgets/message_bubble.dart';
+import 'package:ai_chat_app/features/conversation/domain/entities/conversation_entity.dart';
+import 'package:ai_chat_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../routes/app_routes.dart';
-import '../../../conversation/domain/entities/conversation_entity.dart';
-import '../controllers/chat_controller.dart';
-import '../widgets/chat_input_bar.dart';
-import '../widgets/message_bubble.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final conversation = Get.arguments as ConversationEntity?;
-    final controller = Get.find<ChatController>();
+    final ConversationEntity? conversation =
+        Get.arguments as ConversationEntity?;
+    final ChatController controller = Get.find<ChatController>();
 
     if (conversation != null) {
       // Only load if different conversation
@@ -25,22 +27,21 @@ class ChatPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  conversation?.title ?? 'New Chat',
-                  style: AppTextStyles.titleMedium,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  conversation?.model ?? '',
-                  style: AppTextStyles.labelSmall,
-                ),
-              ],
-            )),
-        actions: [
+        title: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                conversation?.title ?? 'New Chat',
+                style: AppTextStyles.titleMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(conversation?.model ?? '', style: AppTextStyles.labelSmall),
+            ],
+          ),
+        ),
+        actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.auto_awesome_outlined),
             onPressed: () => Get.toNamed(AppRoutes.promptTemplates),
@@ -53,7 +54,7 @@ class ChatPage extends StatelessWidget {
         ],
       ),
       body: Column(
-        children: [
+        children: <Widget>[
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value && controller.messages.isEmpty) {
@@ -62,7 +63,7 @@ class ChatPage extends StatelessWidget {
 
               if (controller.messages.isEmpty) {
                 return _WelcomeView(
-                  onTemplateTap: (prompt) {
+                  onTemplateTap: (String prompt) {
                     controller.applyTemplate(prompt);
                   },
                 );
@@ -72,13 +73,14 @@ class ChatPage extends StatelessWidget {
                 controller: controller.scrollController,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 itemCount: controller.messages.length,
-                itemBuilder: (_, i) {
-                  final msg = controller.messages[i];
-                  final isLastAssistant = i == controller.messages.length - 1 &&
-                      msg.isAssistant;
+                itemBuilder: (_, int i) {
+                  final MessageEntity msg = controller.messages[i];
+                  final bool isLastAssistant =
+                      i == controller.messages.length - 1 && msg.isAssistant;
                   return MessageBubble(
                     message: msg,
-                    isStreaming: isLastAssistant && controller.isStreaming.value,
+                    isStreaming:
+                        isLastAssistant && controller.isStreaming.value,
                     streamingContent: controller.streamingContent.value,
                   );
                 },
@@ -86,7 +88,7 @@ class ChatPage extends StatelessWidget {
             }),
           ),
           Obx(() {
-            final err = controller.errorMessage.value;
+            final String? err = controller.errorMessage.value;
             if (err == null) return const SizedBox.shrink();
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -99,14 +101,21 @@ class ChatPage extends StatelessWidget {
                 ),
               ),
               child: Row(
-                children: [
-                  const Icon(Icons.error_outline,
-                      color: AppColors.error, size: 16),
+                children: <Widget>[
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppColors.error,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                      child: Text(err,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.error))),
+                    child: Text(
+                      err,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
                     color: AppColors.error,
@@ -134,7 +143,7 @@ class ChatPage extends StatelessWidget {
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             ListTile(
               leading: const Icon(Icons.delete_sweep_outlined),
               title: const Text('Clear Messages'),
@@ -161,16 +170,15 @@ class ChatPage extends StatelessWidget {
 }
 
 class _WelcomeView extends StatelessWidget {
-  final void Function(String prompt) onTemplateTap;
-
   const _WelcomeView({required this.onTemplateTap});
+  final void Function(String prompt) onTemplateTap;
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
-        children: [
+        children: <Widget>[
           const SizedBox(height: 32),
           Container(
             width: 80,
@@ -179,12 +187,17 @@ class _WelcomeView extends StatelessWidget {
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(20),
             ),
-            child:
-                const Icon(Icons.auto_awesome, size: 40, color: Colors.white),
+            child: const Icon(
+              Icons.auto_awesome,
+              size: 40,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 16),
-          Text('Ask me anything',
-              style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            'Ask me anything',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
           const SizedBox(height: 8),
           Text(
             'Start a conversation or pick a template below',
@@ -196,18 +209,20 @@ class _WelcomeView extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             alignment: WrapAlignment.center,
-            children: [
+            children: <Widget>[
               _QuickChip(
                 emoji: '🔍',
                 label: 'Code Review',
                 onTap: () => onTemplateTap(
-                    'Please review the following code for bugs and improvements:\n\n'),
+                  'Please review the following code for bugs and improvements:\n\n',
+                ),
               ),
               _QuickChip(
                 emoji: '✍️',
                 label: 'Writing Help',
                 onTap: () => onTemplateTap(
-                    'Please help me write or improve the following:\n\n'),
+                  'Please help me write or improve the following:\n\n',
+                ),
               ),
               _QuickChip(
                 emoji: '💡',
@@ -219,13 +234,14 @@ class _WelcomeView extends StatelessWidget {
                 emoji: '🐛',
                 label: 'Debug',
                 onTap: () => onTemplateTap(
-                    'I\'m encountering this bug. Help me fix it:\n\nError:\n\nCode:\n\n'),
+                  'I\'m encountering this bug. Help me fix it:\n\nError:\n\nCode:\n\n',
+                ),
               ),
               _QuickChip(
                 emoji: '📋',
                 label: 'Summarize',
-                onTap: () => onTemplateTap(
-                    'Please summarize the following:\n\n'),
+                onTap: () =>
+                    onTemplateTap('Please summarize the following:\n\n'),
               ),
             ],
           ),
@@ -236,15 +252,14 @@ class _WelcomeView extends StatelessWidget {
 }
 
 class _QuickChip extends StatelessWidget {
-  final String emoji;
-  final String label;
-  final VoidCallback onTap;
-
   const _QuickChip({
     required this.emoji,
     required this.label,
     required this.onTap,
   });
+  final String emoji;
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

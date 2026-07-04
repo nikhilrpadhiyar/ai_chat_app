@@ -1,8 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ai_chat_app/features/conversation/domain/entities/conversation_entity.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final base = ConversationEntity(
+  final ConversationEntity base = ConversationEntity(
     id: 'conv-1',
     title: 'New Chat',
     createdAt: DateTime(2024, 6, 1),
@@ -12,7 +12,7 @@ void main() {
 
   group('ConversationEntity', () {
     test('copyWith updates only specified fields', () {
-      final updated = base.copyWith(
+      final ConversationEntity updated = base.copyWith(
         title: 'My Chat',
         messageCount: 5,
       );
@@ -23,7 +23,7 @@ void main() {
     });
 
     test('equality is value-based via Equatable', () {
-      final copy = ConversationEntity(
+      final ConversationEntity copy = ConversationEntity(
         id: base.id,
         title: base.title,
         createdAt: base.createdAt,

@@ -5,14 +5,6 @@ enum MessageRole { user, assistant, system }
 enum MessageStatus { sending, sent, error, streaming }
 
 class MessageEntity extends Equatable {
-  final String id;
-  final String conversationId;
-  final MessageRole role;
-  final String content;
-  final MessageStatus status;
-  final DateTime createdAt;
-  final int? tokenCount;
-
   const MessageEntity({
     required this.id,
     required this.conversationId,
@@ -22,6 +14,13 @@ class MessageEntity extends Equatable {
     required this.createdAt,
     this.tokenCount,
   });
+  final String id;
+  final String conversationId;
+  final MessageRole role;
+  final String content;
+  final MessageStatus status;
+  final DateTime createdAt;
+  final int? tokenCount;
 
   bool get isUser => role == MessageRole.user;
   bool get isAssistant => role == MessageRole.assistant;
@@ -32,17 +31,24 @@ class MessageEntity extends Equatable {
     String? content,
     MessageStatus? status,
     int? tokenCount,
-  }) =>
-      MessageEntity(
-        id: id,
-        conversationId: conversationId,
-        role: role,
-        content: content ?? this.content,
-        status: status ?? this.status,
-        createdAt: createdAt,
-        tokenCount: tokenCount ?? this.tokenCount,
-      );
+  }) => MessageEntity(
+    id: id,
+    conversationId: conversationId,
+    role: role,
+    content: content ?? this.content,
+    status: status ?? this.status,
+    createdAt: createdAt,
+    tokenCount: tokenCount ?? this.tokenCount,
+  );
 
   @override
-  List<Object?> get props => [id, conversationId, role, content, status, createdAt, tokenCount];
+  List<Object?> get props => <Object?>[
+    id,
+    conversationId,
+    role,
+    content,
+    status,
+    createdAt,
+    tokenCount,
+  ];
 }
